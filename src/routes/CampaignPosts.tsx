@@ -9,6 +9,8 @@ import 'react-horizontal-scrolling-menu/dist/styles.css';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import Box from '@mui/material/Box';
+import { useQuery } from "@tanstack/react-query"
+
 
 
 
@@ -41,11 +43,11 @@ function CampaignPosts() {
       }
     ]);
     
+    
 
     return (
       <div>
         <Box sx={{display: { sm: 'none', md: "block", xs: "none" }}}>
-
         <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
           {items.map(({ id, date, image, description }) => (
             <SingleCard

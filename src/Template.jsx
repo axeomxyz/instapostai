@@ -1,5 +1,5 @@
 import './App.css';
-import React from 'react'
+import React, {useState} from 'react'
 import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -7,6 +7,12 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { Button, Stack } from '@mui/material';
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query"
+import { single, useData } from "./api/openAiApi"
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+
+
 
 
 
@@ -46,21 +52,45 @@ function TabPanel(props) {
   
 
 export default function Template() {
+  const [value, setValue] = React.useState(0);
+  const [textInput, setTextInput] = useState("Write me an instagram post about me in the beach");
+    const handleTextInputChange = event => {
+        setTextInput(event.target.value);
+    };
+  const queryClient = useQueryClient()
 
-    const [value, setValue] = React.useState(0);
 
     const handleChange = (event, newValue) => {
       setValue(newValue);
     };
+    const { mutate, isLoading } = useMutation(single, {
+      onSuccess: data => {
+         console.log(data);
+         queryClient.setQueryData(["responseAi"], data)
+   },
+     onError: () => {
+          alert("there was an error")
+   },
+     onSettled: () => {
+        queryClient.invalidateQueries(["responseAi"])
+   }
+   });
+   
 
   return (
     <Box>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={isLoading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} centered>
           <Tab label="TEMPLATE 1" {...a11yProps(0)} />
         </Tabs>
       </Box>
-      <TabPanel value={value} index={0}>
+      <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex"}}>
       <Stack
         spacing={3}
         >
@@ -74,10 +104,11 @@ export default function Template() {
               height: "60vh",
             },
           }}
-          defaultValue="Write a post about me chilling in the sunset thinking about good times"
+          onChange= {handleTextInputChange}
+          value={textInput}
         />
-        <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large">
-            CREATE!
+        <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large" onClick={() => mutate(textInput)}>
+            CREATE! 
         </Button>
     </Stack>
       </TabPanel>

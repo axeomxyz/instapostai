@@ -1,4 +1,4 @@
-import './App.css';
+import React from 'react'
 import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -20,21 +20,20 @@ import Template from './Template';
 import PostsEdit from './routes/PostsEdit';
 import { Routes, Route, Link, useLocation } from "react-router-dom"
 import CampaignPosts from './routes/CampaignPosts.tsx';
-import Grid from '@mui/material/Grid';
-
-
+import { useQuery, useMutation, useQueryClient, getQueryData } from "@tanstack/react-query"
 
 const drawerWidth = 240;
 
 
 
 
-function App(props) {
-  
-  const { window } = props;
+function MainLayout(props) {
+
+    const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
   const {pathname} = useLocation();
 
+  
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -71,9 +70,9 @@ function App(props) {
   const container = window !== undefined ? () => window().document.body : undefined;
 
   return (
-    
-    <div className="App">
-      <Box sx={{ display: 'flex' }}>
+    <div>
+        <Box sx={{ display: 'flex' }}>
+        
         <CssBaseline />
         <AppBar
           position="fixed"
@@ -141,29 +140,29 @@ function App(props) {
           sx={{ flexGrow: 1 ,width: { sm: `calc(100% - ${drawerWidth}px)` } }}
         >
           <Toolbar />
-          <Grid container spacing={2}>
-            <Grid item xs={12} xl={2} md={3}>
-              <Template />
-            </Grid>
-            <Grid item xs={12} xl={10} md={9}>
-              <Box 
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                minHeight="90vh"
-                style={{width: "-webkit-fill-available"}}
-              >
-                <Routes>
-                  <Route path="/" element={ <PostsEdit /> } />
-                  <Route path="/campaign" element={ <CampaignPosts /> } />
-                </Routes>
-              </Box>
-            </Grid>
-          </Grid>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            divider={<Divider orientation="vertical" flexItem />}
+            spacing={2}
+          >
+            <Template />
+            <Box 
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              minHeight="90vh"
+              style={{width: "-webkit-fill-available"}}
+            >
+              <Routes>
+                <Route path="/" element={ <PostsEdit /> } />
+                <Route path="/campaign" element={ <CampaignPosts /> } />
+              </Routes>
+            </Box>
+          </Stack>
         </Box>
       </Box>
     </div>
-  );
+  )
 }
 
-export default App;
+export default MainLayout

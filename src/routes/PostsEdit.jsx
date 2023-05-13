@@ -3,10 +3,14 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import { Button, CardActionArea, Stack, TextField } from '@mui/material';
+import { useQuery } from "@tanstack/react-query"
+
 
 function PostsEdit() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
+  let resp = useQuery(["responseAi"]).data
+
   useEffect(() => {
     if (selectedImage) {
       setImageUrl(URL.createObjectURL(selectedImage));
@@ -15,6 +19,8 @@ function PostsEdit() {
 
   return (
     <Stack spacing={3}>
+      {resp ? 
+        <div>
         <Card sx={{width: "40vh"}}>
         <input
     accept="image/"
@@ -38,6 +44,7 @@ function PostsEdit() {
             multiline
             rows={4}
             defaultValue="Protect your skin and the planet with our new natural sunblock. Our formula is free from harmful chemicals and provides broad-spectrum protection against UVA and UVB rays."
+            value={resp}
             variant="standard"
             InputProps={{
               disableUnderline: true
@@ -54,6 +61,11 @@ function PostsEdit() {
         <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large">
             POST!
         </Button>
+        </div>
+      : <div>
+        <h2>Give us a prompt to generate a post!</h2>
+        </div>}
+
     </Stack>
   )
 }
