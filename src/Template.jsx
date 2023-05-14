@@ -33,7 +33,7 @@ function TabPanel(props) {
       >
         {value === index && (
           <Box sx={{ p: 3 }}>
-            <Typography sx={{display: "flex"}}>{children}</Typography>
+            <Typography sx={{display: "flex", height: "100%"}}>{children}</Typography>
           </Box>
         )}
       </div>
@@ -101,7 +101,7 @@ export default function Template() {
       
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: "column", height: "100%" }}>
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={isLoading}
@@ -113,25 +113,30 @@ export default function Template() {
           <Tab label="TEMPLATE 1" {...a11yProps(0)} />
         </Tabs>
       </Box>
-      <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex"}}>
-      <Stack
-        spacing={3}
+      <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex", flexGrow: "1"}}>
+      <Box
+        sx={{ display: 'flex', flexDirection: "column", gap: "20px"}}
+        
         >
     
         <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>What's this campaign about?</Typography>
         <TextField
           multiline
-          sx={{width: "100%"}}
+          sx={{width: "100%",
+          "& .MuiInputBase-root": {
+            height: "100%",
+            flexDirection: "column"
+          },
+          flexGrow: "1"}}
           inputProps={{
             style: {
-              height: singlePost ? "50vh" : "40vh",
             },
           }}
           onChange= {handleTextInputChange}
           value={textInput}
         />
         {!singlePost && <TextField
-          label="Number of posts:"
+          label="How many posts?"
           id="outlined-start-adornment"
           sx={{width: "100%"}}
           type="number"
@@ -151,7 +156,7 @@ export default function Template() {
         <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large" onClick={() => mutate([textInput, postNumber])}>
             CREATE! 
         </Button>
-    </Stack>
+    </Box>
       </TabPanel>
     </Box>
   )

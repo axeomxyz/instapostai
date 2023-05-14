@@ -142,10 +142,10 @@ function App(props) {
         >
           <Toolbar />
           <Grid container spacing={2}>
-            <Grid item xs={12} xl={2} md={3}>
+            <Grid item xs={12} xl={3} md={3}>
               <Template />
             </Grid>
-            <Grid item xs={12} xl={10} md={9}>
+            <Grid item xs={12} xl={9} md={9}>
               <Box 
                 display="flex"
                 justifyContent="center"
