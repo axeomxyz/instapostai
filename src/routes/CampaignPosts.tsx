@@ -16,61 +16,60 @@ import { useQuery } from "@tanstack/react-query"
 
 
 function CampaignPosts() {
-    const [items, setItems] = React.useState([
-      {
-        id: "0",
-        date: "05/19/2023",
-        image: "https://placehold.co/600x400",
-        description: "Protect your skin and the planet with our new natural sunblock. Our formula is free from harmful chemicals and provides broad-spectrum protection against UVA and UVB rays."
-      },
-      {
-        id: "1",
-        date: "05/23/2023",
-        image: "https://placehold.co/700x200",
-        description: "Protect your skin and the planet with our new natural sunblock. Our formula is free from harmful chemicals and provides broad-spectrum protection against UVA and UVB rays."
-      },
-      {
-        id: "2",
-        date: "05/28/2023",
-        image: "https://placehold.co/400x400",
-        description: "Protect your skin and the planet with our new natural sunblock. Our formula is free from harmful chemicals and provides broad-spectrum protection against UVA and UVB rays."
-      },
-      {
-        id: "3",
-        date: "05/28/2023",
-        image: "https://placehold.co/400x450",
-        description: "Protect your skin and the planet with our new natural sunblock. Our formula is free from harmful chemicals and provides broad-spectrum protection against UVA and UVB rays."
-      }
-    ]);
-    
-    
+    const [items, setItems] = React.useState([]);
+    let resp = useQuery(["responseAiCampaign"]).data
+    let respArray
+    let finalResp
+    if (resp) {
+
+      respArray = resp.split("InstaPostEnd")
+      respArray.pop()
+      finalResp = []
+      respArray.forEach((element, index) => {
+        const obj = {
+          id: index,
+          date: "05/23/2023",
+          image: "https://placehold.co/700x200",
+          description: element.replace(/(\r\n|\n|\r)/gm, "").replace("InstaPostStart:", "")
+        }
+        finalResp.push(obj)
+      });
+    }
+      
 
     return (
       <div>
-        <Box sx={{display: { sm: 'none', md: "block", xs: "none" }}}>
-        <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
-          {items.map(({ id, date, image, description }) => (
-            <SingleCard
-            itemId={id}
-            date={date}
-            image={image}
-            description={description}
-            key={id}
-            />
-            ))}
-        </ScrollMenu>
-        </Box>
-        <Box sx={{display: { sm: 'block', md: "none" }}}>
-            {items.map(({ id, date, image, description }) => (
-              <SingleCard
-              itemId={id}
-              date={date}
-              image={image}
-              description={description}
-              key={id}
-              />
-              ))}
-        </Box>
+          {resp ? <div>
+            <Box sx={{display: { sm: 'none', md: "block", xs: "none" }}}>
+              {/*JSON.stringify(respArray)*/}
+            <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
+              {finalResp.map(({ id, date, image, description }) => (
+                <SingleCard
+                itemId={id}
+                date={date}
+                image={image}
+                description={description}
+                key={id}
+                />
+                ))}
+            </ScrollMenu>
+            </Box>
+            <Box sx={{display: { sm: 'block', md: "none" }}}>
+                {finalResp.map(({ id, date, image, description }) => (
+                  <SingleCard
+                  itemId={id}
+                  date={date}
+                  image={image}
+                  description={description}
+                  key={id}
+                  />
+                  ))}
+            </Box>
+          </div> : 
+          <h2>Give us a prompt to generate a campaign!</h2>
+          }
+          
+
       </div>
     );
 }

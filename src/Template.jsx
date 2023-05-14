@@ -1,5 +1,5 @@
 import './App.css';
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -8,9 +8,12 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { Button, Stack } from '@mui/material';
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query"
-import { single, useData } from "./api/openAiApi"
+import { single, campaign } from "./api/openAiApi"
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useLocation } from 'react-router-dom';
+import InputAdornment from '@mui/material/InputAdornment';
+
 
 
 
@@ -53,29 +56,47 @@ function TabPanel(props) {
 
 export default function Template() {
   const [value, setValue] = React.useState(0);
-  const [textInput, setTextInput] = useState("Write me an instagram post about me in the beach");
+  const [postNumber, setPostNumber] = React.useState(2);
+  let location = useLocation();
+  let singlePost = location.pathname == "/"
+  const [textInput, setTextInput] = useState("");
     const handleTextInputChange = event => {
         setTextInput(event.target.value);
     };
   const queryClient = useQueryClient()
-
+    useEffect(() => {
+      if (singlePost) {
+        setTextInput("Me in the beach")
+      } else {
+        setTextInput("A company that sells wood")
+      }
+    }, [singlePost])
 
     const handleChange = (event, newValue) => {
       setValue(newValue);
     };
-    const { mutate, isLoading } = useMutation(single, {
+    const { mutate, isLoading } = useMutation(singlePost ? single : campaign, {
       onSuccess: data => {
-         console.log(data);
-         queryClient.setQueryData(["responseAi"], data)
-   },
-     onError: () => {
-          alert("there was an error")
-   },
-     onSettled: () => {
+        console.log(data);
+        if (singlePost) {
+          queryClient.setQueryData(["responseAi"], data)
+        } else {
+          queryClient.setQueryData(["responseAiCampaign"], data)
+        }
+    },
+    onError: () => {
+            alert("there was an error")
+    },
+    onSettled: () => {
+      if (singlePost) {
         queryClient.invalidateQueries(["responseAi"])
-   }
-   });
-   
+      } else {
+        queryClient.invalidateQueries(["responseAiCampaign"])
+      }
+      
+    }
+    })
+      
 
   return (
     <Box>
@@ -101,13 +122,31 @@ export default function Template() {
           sx={{width: "100%"}}
           inputProps={{
             style: {
-              height: "60vh",
+              height: singlePost ? "60vh" : "50vh",
             },
           }}
           onChange= {handleTextInputChange}
           value={textInput}
         />
-        <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large" onClick={() => mutate(textInput)}>
+        {!singlePost && <TextField
+          label="Number of posts:"
+          id="outlined-start-adornment"
+          sx={{width: "100%"}}
+          type="number"
+          InputProps={{
+            endAdornment: <InputAdornment position="end">post</InputAdornment>
+          }}
+          onChange= {(e) => {
+            var value = parseInt(e.target.value);
+  
+            if (value > 10) value = 10;
+            if (value < 2) value = 2;
+  
+            setPostNumber(value);
+          }}
+          value={postNumber}
+        />}
+        <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large" onClick={() => mutate([textInput, postNumber])}>
             CREATE! 
         </Button>
     </Stack>
