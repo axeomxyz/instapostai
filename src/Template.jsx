@@ -124,7 +124,7 @@ export default function Template() {
           sx={{width: "100%"}}
           inputProps={{
             style: {
-              height: singlePost ? "60vh" : "50vh",
+              height: singlePost ? "50vh" : "40vh",
             },
           }}
           onChange= {handleTextInputChange}
