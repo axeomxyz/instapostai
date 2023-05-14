@@ -79,8 +79,10 @@ export default function Template() {
       onSuccess: data => {
         console.log(data);
         if (singlePost) {
+          queryClient.invalidateQueries(["responseAi"])
           queryClient.setQueryData(["responseAi"], data)
         } else {
+          queryClient.invalidateQueries(["responseAiCampaign"])
           queryClient.setQueryData(["responseAiCampaign"], data)
         }
     },
