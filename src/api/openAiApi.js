@@ -1,12 +1,13 @@
 import axios from "axios"
 import {useQuery} from "@tanstack/react-query"
 
-export const single = async (prompt) => {
+export const single = async (conversation) => {
+  console.log(conversation)
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
         "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Write me an instagram post about: " + prompt}],
+        "messages": conversation,
         "temperature": 0.7
       },
       {
@@ -17,7 +18,7 @@ export const single = async (prompt) => {
       }
     );
   
-    return response.data.choices[0].message.content;
+    return [...conversation, response.data.choices[0].message];
     //return prompt
 };
 

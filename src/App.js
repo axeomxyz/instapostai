@@ -21,6 +21,7 @@ import PostsEdit from './routes/PostsEdit';
 import { Routes, Route, Link, useLocation } from "react-router-dom"
 import CampaignPosts from './routes/CampaignPosts.tsx';
 import Grid from '@mui/material/Grid';
+import LoginPage from "./routes/LoginPage"
 
 
 
@@ -34,6 +35,12 @@ function App(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
   const {pathname} = useLocation();
+  const [imageUrl, setImageUrl] = useState("");
+  const [postCaption, setPostCaption] = useState("");
+  const [isSharingPost, setIsSharingPost] = useState(false);
+  const [facebookUserAccessToken, setFacebookUserAccessToken] = useState("");
+
+  
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -142,10 +149,10 @@ function App(props) {
         >
           <Toolbar />
           <Grid container spacing={2}>
-            <Grid item xs={12} xl={3} md={3}>
+            <Grid item xs={12} sm={5} xl={4} md={4}>
               <Template />
             </Grid>
-            <Grid item xs={12} xl={9} md={9}>
+            <Grid item xs={12} sm={7} xl={8} md={8}>
               <Box 
                 display="flex"
                 justifyContent="center"
@@ -156,6 +163,7 @@ function App(props) {
                 <Routes>
                   <Route path="/" element={ <PostsEdit /> } />
                   <Route path="/campaign" element={ <CampaignPosts /> } />
+                  <Route path="/login" element={<LoginPage />} />
                 </Routes>
               </Box>
             </Grid>

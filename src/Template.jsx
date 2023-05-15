@@ -6,13 +6,15 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import { Button, Stack } from '@mui/material';
+import { Avatar, Button, Chip, Stack } from '@mui/material';
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query"
 import { single, campaign } from "./api/openAiApi"
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useLocation } from 'react-router-dom';
 import InputAdornment from '@mui/material/InputAdornment';
+import Grid from '@mui/material/Grid';
+import Message from './Message';
 
 
 
@@ -33,7 +35,7 @@ function TabPanel(props) {
       >
         {value === index && (
           <Box sx={{ p: 3 }}>
-            <Typography sx={{display: "flex", height: "100%"}}>{children}</Typography>
+            <Typography sx={{display: "flex", flexDirection: "column", height: "100%"}}>{children}</Typography>
           </Box>
         )}
       </div>
@@ -57,6 +59,10 @@ function TabPanel(props) {
 export default function Template() {
   const [value, setValue] = React.useState(0);
   const [postNumber, setPostNumber] = React.useState(2);
+  const [conversation, setConversation] = React.useState([{"role": "system", "content": 'You are a Expert Content Creator for Instagram page.'},
+  {"role": "assistant", "content": "Hello, I'm Abby, your own seasoned content creator. I will help you craft Instagram content that not only resonates with your audience but also converts them into paying customers."},
+  {"role": "assistant", "content": "Tell me about your business, its mission, vision, and target audience. The more you share, the better I can tailor content ideas to your unique brand identity and customer needs."},
+  {"role": "system", "content": 'You will get the details from the user and give him 3 content ideas and do not make them long. After that ask the user to choose an idea and you will generate one post caption using it. It should start with: InstaPostStart and ends with InstaPostEnd'},])
   let location = useLocation();
   let singlePost = location.pathname == "/"
   const [textInput, setTextInput] = useState("");
@@ -66,7 +72,7 @@ export default function Template() {
   const queryClient = useQueryClient()
     useEffect(() => {
       if (singlePost) {
-        setTextInput("Me in the beach")
+        setTextInput("My company uses AI to make art")
       } else {
         setTextInput("A company that sells wood")
       }
@@ -81,6 +87,7 @@ export default function Template() {
         if (singlePost) {
           queryClient.invalidateQueries(["responseAi"])
           queryClient.setQueryData(["responseAi"], data)
+          setConversation(data)
         } else {
           queryClient.invalidateQueries(["responseAiCampaign"])
           queryClient.setQueryData(["responseAiCampaign"], data)
@@ -101,7 +108,7 @@ export default function Template() {
       
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: "column", height: "100%" }}>
+    <Box sx={{height: "95%"}}>
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={isLoading}
@@ -113,24 +120,31 @@ export default function Template() {
           <Tab label="TEMPLATE 1" {...a11yProps(0)} />
         </Tabs>
       </Box>
-      <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex", flexGrow: "1"}}>
-      <Box
-        sx={{ display: 'flex', flexDirection: "column", gap: "20px"}}
-        
-        >
+      <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex", height: "100%"}}>
     
         <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>What's this campaign about?</Typography>
+        <Box sx={{height: "1vh", overflow: "auto", flexGrow: "1", overflowX: "hidden"}}>
+          {conversation.map(el => {
+            if(el.role == "user") {
+              return <Message AI={false} text={el.content} visible={true}/>
+            }
+            if (el.role == "assistant") {
+              if(el.content.includes("InstaPostStart")) {
+                queryClient.invalidateQueries(["responseAi"])
+                queryClient.setQueryData(["responseAi"], el.content)
+                return (
+                  <Message AI={true} text={el.content.substring(0, el.content.indexOf("InstaPostStart"), el.content.indexOf("InstaPostEnd")) + el.content.substring(el.content.indexOf("InstaPostEnd") + "InstaPostEnd".length, el.content.length)} visible={true}/>
+                  )
+              } else {
+                return <Message AI={true} text={el.content} visible={true}/>
+              }
+            }
+          })}
+        </Box>
         <TextField
           multiline
-          sx={{width: "100%",
-          "& .MuiInputBase-root": {
-            height: "100%",
-            flexDirection: "column"
-          },
-          flexGrow: "1"}}
+          sx={{width: "100%"}}
           inputProps={{
-            style: {
-            },
           }}
           onChange= {handleTextInputChange}
           value={textInput}
@@ -153,10 +167,14 @@ export default function Template() {
           }}
           value={postNumber}
         />}
-        <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large" onClick={() => mutate([textInput, postNumber])}>
+        <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large" onClick={() => {
+          let toPush = [...conversation, {"role": "user", content: textInput}]
+          setConversation(toPush)
+          mutate(toPush)
+          console.log(conversation)
+        }}>
             CREATE! 
         </Button>
-    </Box>
       </TabPanel>
     </Box>
   )

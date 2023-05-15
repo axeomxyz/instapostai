@@ -29,7 +29,7 @@ function CampaignPosts() {
         const obj = {
           id: index,
           date: "05/23/2023",
-          image: "https://placehold.co/700x200",
+          image: "https://picsum.photos/500/600",
           description: element.replace(/(\r\n|\n|\r)/gm, "").replace("InstaPostStart:", "")
         }
         finalResp.push(obj)
