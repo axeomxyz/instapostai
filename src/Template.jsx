@@ -17,6 +17,7 @@ import Grid from '@mui/material/Grid';
 import Message from './Message';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { Send, VisibilityOff } from '@mui/icons-material';
+import Divider from '@mui/material/Divider';
 
 
 
@@ -79,7 +80,20 @@ export default function Template() {
   {"role": "assistant", "content": "Hello, I'm Abby, your own seasoned content creator. I will help you craft Instagram content that not only resonates with your audience but also converts them into paying customers."},
   {"role": "assistant", "content": "Tell me about your business, its mission, vision, and target audience. The more you share, the better I can tailor content ideas to your unique brand identity and customer needs."},
   {"role": "system", "content": 'You will get the details from the user and give him 3 content ideas and do not make them long. After that ask the user to choose an idea and you will generate captions for ' + String(postsNumber) + ' posts using it. Your results should be in this format: "InstaPostStart <caption> InstaPostEnd" do not add anything else'},])
-  
+
+  useEffect(
+    () => {
+      queryClient.invalidateQueries(["responseAi"])
+      queryClient.setQueryData(["responseAi"], [])
+      queryClient.invalidateQueries(["responseAiCampaign"])
+      queryClient.setQueryData(["responseAiCampaign"], [])
+      setConversation([{"role": "system", "content": 'You are a Expert Content Creator for Instagram page.'},
+      {"role": "assistant", "content": "Hello, I'm Abby, your own seasoned content creator. I will help you craft Instagram content that not only resonates with your audience but also converts them into paying customers."},
+      {"role": "assistant", "content": "Tell me about your business, its mission, vision, and target audience. The more you share, the better I can tailor content ideas to your unique brand identity and customer needs."},
+      {"role": "system", "content": 'You will get the details from the user and give him 3 content ideas and do not make them long. After that ask the user to choose an idea and you will generate captions for ' + String(postsNumber) + ' posts using it. Your results should be in this format: "InstaPostStart <caption> InstaPostEnd" do not add anything else'},])
+    },
+    [singlePost]
+  )
   const [textInput, setTextInput] = useState("");
     const handleTextInputChange = event => {
         setTextInput(event.target.value);
@@ -137,7 +151,8 @@ export default function Template() {
       </Box>
       <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex", height: "100%"}}>
     
-        <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>{singlePost ? "What's this post about?" : "What's this campaign about?"}</Typography>
+        <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>{singlePost ? "What's this post about?" : "What's this campaign about?"}<Divider /></Typography>
+        
         <Box id="messagesContainer" sx={{height: "1vh", overflow: "auto", flexGrow: "1", overflowX: "hidden"}}>
           {conversation.map(el => {
             if(el.role == "user") {
@@ -147,16 +162,16 @@ export default function Template() {
               if(el.content.includes("InstaPostStart")) {
                 if(singlePost) {
                   queryClient.invalidateQueries(["responseAi"])
-                  queryClient.setQueryData(["responseAi"], el.content)
+                  queryClient.setQueryData(["responseAi"], el.content.replaceAll("<br />", ""))
                 } else {
                   queryClient.invalidateQueries(["responseAiCampaign"])
-                  queryClient.setQueryData(["responseAiCampaign"], el.content)
+                  queryClient.setQueryData(["responseAiCampaign"], el.content.replaceAll("<br />", ""))
                 }
                 return (
-                  <Message AI={true} text={el.content.substring(0, el.content.indexOf("InstaPostStart"), el.content.lastIndexOf("InstaPostEnd")) + el.content.substring(el.content.lastIndexOf("InstaPostEnd") + "InstaPostEnd".length, el.content.length)} visible={true}/>
+                  <Message AI={true} text={el.content.substring(0, el.content.indexOf("InstaPostStart"), el.content.lastIndexOf("InstaPostEnd")).replaceAll("<br />", "") + el.content.substring(el.content.lastIndexOf("InstaPostEnd") + "InstaPostEnd".length, el.content.length).replaceAll("<br />", "")} visible={true}/>
                   )
                 } else {
-                  return <Message AI={true} text={el.content} visible={true}/>
+                  return el.content.split("<br />").filter((x) => x != "").map(y => {return <Message AI={true} text={y} visible={true}/>})
                 }
               }
             })}
@@ -181,6 +196,16 @@ export default function Template() {
           multiline
           sx={{width: "100%"}}
           placeholder='Write here...'
+          onKeyDown={(ev) => {
+            if (ev.key === 'Enter') {
+              ev.preventDefault();
+              let toPush = [...conversation, {"role": "user", content: textInput}]
+              setConversation(toPush)
+              mutate(toPush)
+              console.log(toPush)
+              setTextInput("")
+            }
+          }}
           InputProps={{
             endAdornment: <InputAdornment position="end"><IconButton onClick={() => {
               let toPush = [...conversation, {"role": "user", content: textInput}]

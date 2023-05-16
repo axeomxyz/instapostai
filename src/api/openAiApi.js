@@ -1,6 +1,10 @@
 import axios from "axios"
 import {useQuery} from "@tanstack/react-query"
 
+function replaceWithBr(str) {
+  return str.replace(/\n/g, "<br />")
+}
+
 export const single = async (conversation) => {
   console.log(conversation)
     const response = await axios.post(
@@ -17,8 +21,10 @@ export const single = async (conversation) => {
         },
       }
     );
-  
-    return [...conversation, response.data.choices[0].message];
+    return [...conversation, {
+      "role": response.data.choices[0].message.role,
+      "content": replaceWithBr(response.data.choices[0].message.content)
+    }];
     //return prompt
 };
 
@@ -38,5 +44,8 @@ export const campaign = async (conversation) => {
       }
     );
   
-    return [...conversation, response.data.choices[0].message];
+    return [...conversation, {
+      "role": response.data.choices[0].message.role,
+      "content": replaceWithBr(response.data.choices[0].message.content)
+    }];
 };
