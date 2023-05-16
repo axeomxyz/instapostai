@@ -22,12 +22,12 @@ export const single = async (conversation) => {
     //return prompt
 };
 
-export const campaign = async (prompt) => {
+export const campaign = async (conversation) => {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
         "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Write me an instagram campaign of " + String(prompt[1]) + " posts about:'" + prompt[0] + "' Each post should start with the word 'InstaPostStart' and ends with 'InstaPostEnd'."}],
+        "messages": conversation,
         "temperature": 0.7
       },
       {
@@ -38,5 +38,5 @@ export const campaign = async (prompt) => {
       }
     );
   
-    return response.data.choices[0].message.content;
+    return [...conversation, response.data.choices[0].message];
 };

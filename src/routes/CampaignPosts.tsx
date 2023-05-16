@@ -20,26 +20,23 @@ function CampaignPosts() {
     let resp = useQuery(["responseAiCampaign"]).data
     let respArray
     let finalResp
-    if (resp) {
-
-      respArray = resp.split("InstaPostEnd")
-      respArray.pop()
-      finalResp = []
-      respArray.forEach((element, index) => {
-        const obj = {
-          id: index,
-          date: "05/23/2023",
-          image: "https://picsum.photos/500/600",
-          description: element.replace(/(\r\n|\n|\r)/gm, "").replace("InstaPostStart:", "")
-        }
-        finalResp.push(obj)
-      });
-    }
       
-
-    return (
-      <div>
-          {resp ? <div>
+    if (resp) {
+      if(resp.includes("InstaPostStart")) {
+        respArray = resp.substr(resp.indexOf("InstaPostStart") + "InstaPostStart".length, resp.lastIndexOf("InstaPostEnd")).replace(/(\r\n|\n|\r)/gm, "").replace("InstaPostStart", "").split("InstaPostEnd")
+        respArray.pop()
+        finalResp = []
+        respArray.forEach((element, index) => {
+          const obj = {
+            id: index,
+            date: "05/23/2023",
+            image: "https://picsum.photos/500/600",
+            description: element.replace(/(\r\n|\n|\r)/gm, "").replace("InstaPostStart:", "")
+          }
+          finalResp.push(obj)
+        });
+        console.log(finalResp)
+        return (<div>
             <Box sx={{display: { sm: 'none', md: "block", xs: "none" }}}>
               {/*JSON.stringify(respArray)*/}
             <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
@@ -65,13 +62,18 @@ function CampaignPosts() {
                   />
                   ))}
             </Box>
-          </div> : 
-          <h2>Give us a prompt to generate a campaign!</h2>
-          }
-          
+          </div>)
+      } else {
+        return <div>
+                <h2>Give us a prompt to generate some posts!</h2>
+                </div>
+      }
+    } else {
+      return <div>
+              <h2>Give us a prompt to generate some posts!</h2>
+              </div>
+    }
 
-      </div>
-    );
 }
 
 function LeftArrow() {

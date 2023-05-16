@@ -6,7 +6,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import { Avatar, Button, Chip, Stack } from '@mui/material';
+import { Avatar, Button, Chip, IconButton, Stack } from '@mui/material';
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query"
 import { single, campaign } from "./api/openAiApi"
 import Backdrop from '@mui/material/Backdrop';
@@ -15,7 +15,8 @@ import { useLocation } from 'react-router-dom';
 import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Grid';
 import Message from './Message';
-
+import ReplayIcon from '@mui/icons-material/Replay';
+import { Send, VisibilityOff } from '@mui/icons-material';
 
 
 
@@ -55,16 +56,30 @@ function TabPanel(props) {
     };
   }
   
+  const Typing = () => (
+    <div className="typing">
+      <div className="typing__dot"></div>
+      <div className="typing__dot"></div>
+      <div className="typing__dot"></div>
+    </div>
+  )
 
 export default function Template() {
   const [value, setValue] = React.useState(0);
   const [postNumber, setPostNumber] = React.useState(2);
+  let location = useLocation();
+  let singlePost = location.pathname == "/"
+  let postsNumber
+  if (singlePost) {
+    postsNumber = 1
+  } else {
+    postsNumber = postNumber
+  }
   const [conversation, setConversation] = React.useState([{"role": "system", "content": 'You are a Expert Content Creator for Instagram page.'},
   {"role": "assistant", "content": "Hello, I'm Abby, your own seasoned content creator. I will help you craft Instagram content that not only resonates with your audience but also converts them into paying customers."},
   {"role": "assistant", "content": "Tell me about your business, its mission, vision, and target audience. The more you share, the better I can tailor content ideas to your unique brand identity and customer needs."},
-  {"role": "system", "content": 'You will get the details from the user and give him 3 content ideas and do not make them long. After that ask the user to choose an idea and you will generate one post caption using it. It should start with: InstaPostStart and ends with InstaPostEnd'},])
-  let location = useLocation();
-  let singlePost = location.pathname == "/"
+  {"role": "system", "content": 'You will get the details from the user and give him 3 content ideas and do not make them long. After that ask the user to choose an idea and you will generate captions for ' + String(postsNumber) + ' posts using it. Your results should be in this format: "InstaPostStart <caption> InstaPostEnd" do not add anything else'},])
+  
   const [textInput, setTextInput] = useState("");
     const handleTextInputChange = event => {
         setTextInput(event.target.value);
@@ -77,6 +92,7 @@ export default function Template() {
         setTextInput("A company that sells wood")
       }
     }, [singlePost])
+    
 
     const handleChange = (event, newValue) => {
       setValue(newValue);
@@ -91,6 +107,8 @@ export default function Template() {
         } else {
           queryClient.invalidateQueries(["responseAiCampaign"])
           queryClient.setQueryData(["responseAiCampaign"], data)
+          setConversation(data)
+          console.log(conversation)
         }
     },
     onError: () => {
@@ -105,16 +123,13 @@ export default function Template() {
       
     }
     })
-      
 
+    useEffect(() => {
+      document.getElementById("messagesContainer").scrollTop = document.getElementById("messagesContainer").scrollHeight
+    }, [isLoading])
+      
   return (
     <Box sx={{height: "95%"}}>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={isLoading}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} centered>
           <Tab label="TEMPLATE 1" {...a11yProps(0)} />
@@ -122,41 +137,36 @@ export default function Template() {
       </Box>
       <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex", height: "100%"}}>
     
-        <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>What's this campaign about?</Typography>
-        <Box sx={{height: "1vh", overflow: "auto", flexGrow: "1", overflowX: "hidden"}}>
+        <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>{singlePost ? "What's this post about?" : "What's this campaign about?"}</Typography>
+        <Box id="messagesContainer" sx={{height: "1vh", overflow: "auto", flexGrow: "1", overflowX: "hidden"}}>
           {conversation.map(el => {
             if(el.role == "user") {
               return <Message AI={false} text={el.content} visible={true}/>
             }
             if (el.role == "assistant") {
               if(el.content.includes("InstaPostStart")) {
-                queryClient.invalidateQueries(["responseAi"])
-                queryClient.setQueryData(["responseAi"], el.content)
+                if(singlePost) {
+                  queryClient.invalidateQueries(["responseAi"])
+                  queryClient.setQueryData(["responseAi"], el.content)
+                } else {
+                  queryClient.invalidateQueries(["responseAiCampaign"])
+                  queryClient.setQueryData(["responseAiCampaign"], el.content)
+                }
                 return (
-                  <Message AI={true} text={el.content.substring(0, el.content.indexOf("InstaPostStart"), el.content.indexOf("InstaPostEnd")) + el.content.substring(el.content.indexOf("InstaPostEnd") + "InstaPostEnd".length, el.content.length)} visible={true}/>
+                  <Message AI={true} text={el.content.substring(0, el.content.indexOf("InstaPostStart"), el.content.lastIndexOf("InstaPostEnd")) + el.content.substring(el.content.lastIndexOf("InstaPostEnd") + "InstaPostEnd".length, el.content.length)} visible={true}/>
                   )
-              } else {
-                return <Message AI={true} text={el.content} visible={true}/>
+                } else {
+                  return <Message AI={true} text={el.content} visible={true}/>
+                }
               }
-            }
-          })}
+            })}
+            {isLoading ? <Message AI={true} text={<Typing />} visible={true}/> : ""}
         </Box>
-        <TextField
-          multiline
-          sx={{width: "100%"}}
-          inputProps={{
-          }}
-          onChange= {handleTextInputChange}
-          value={textInput}
-        />
         {!singlePost && <TextField
           label="How many posts?"
           id="outlined-start-adornment"
-          sx={{width: "100%"}}
+          sx={{width: "100%", padding: "10px"}}
           type="number"
-          InputProps={{
-            endAdornment: <InputAdornment position="end">post</InputAdornment>
-          }}
           onChange= {(e) => {
             var value = parseInt(e.target.value);
   
@@ -167,14 +177,23 @@ export default function Template() {
           }}
           value={postNumber}
         />}
-        <Button variant="contained" color="primary" sx={{borderRadius: "100px", width: "100%"}} size="large" onClick={() => {
-          let toPush = [...conversation, {"role": "user", content: textInput}]
-          setConversation(toPush)
-          mutate(toPush)
-          console.log(conversation)
-        }}>
-            CREATE! 
-        </Button>
+        <TextField
+          multiline
+          sx={{width: "100%"}}
+          placeholder='Write here...'
+          InputProps={{
+            endAdornment: <InputAdornment position="end"><IconButton onClick={() => {
+              let toPush = [...conversation, {"role": "user", content: textInput}]
+              setConversation(toPush)
+              mutate(toPush)
+              console.log(toPush)
+              setTextInput("")
+            }}><Send /></IconButton></InputAdornment>
+          }}
+          onChange= {handleTextInputChange}
+          value={textInput}
+        />
+        
       </TabPanel>
     </Box>
   )
