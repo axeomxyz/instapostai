@@ -151,7 +151,7 @@ export default function Template() {
       </Box>
       <TabPanel value={value} index={0} style={{justifyContent: "center", display: "flex", height: "100%"}}>
     
-        <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>{singlePost ? "What's this post about?" : "What's this campaign about?"}<Divider /></Typography>
+        <Typography sx={{fontWeight: "700", fontSize: "1.5rem"}}>{singlePost ? "Single Post" : "Campaign"}<Divider /></Typography>
         
         <Box id="messagesContainer" sx={{height: "1vh", overflow: "auto", flexGrow: "1", overflowX: "hidden"}}>
           {conversation.map(el => {
