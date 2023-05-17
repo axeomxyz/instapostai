@@ -38,7 +38,7 @@ function App(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
   const {pathname} = useLocation();
-  const [isLogged, setIsLogged] = useState(false);
+  const [isLogged, setIsLogged] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
   const [postCaption, setPostCaption] = useState("");
   const [isSharingPost, setIsSharingPost] = useState(false);
@@ -52,7 +52,7 @@ function App(props) {
   // Check if the user is authenticated with Facebook
   useEffect(() => {
     window.FB.getLoginStatus((response) => {
-      setFacebookUserAccessToken(response.authResponse?.accessToken);
+      setFacebookUserAccessToken(response.authResponse?.accessToken + "s");
       setFacebookUserId(response.authResponse?.userID)
       if(response.authResponse?.accessToken) {
         setIsLogged(true)
