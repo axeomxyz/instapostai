@@ -1,5 +1,5 @@
 // Find your App ID in the App Dashboard on Facebook for Developers.
-const FACEBOOK_APP_ID = "622401236591167";
+const FACEBOOK_APP_ID = "564388459174649";
 
 export default function initFacebookSDK() {
   return new Promise((resolve) => {
